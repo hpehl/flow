@@ -19,5 +19,6 @@
 <module>
     <inherits name="org.jboss.elemento.Core"/>
     <source path="flow"/>
+    <collapse-all-properties/>
     <entry-point class="org.jboss.hal.flow.Main"/>
 </module>
