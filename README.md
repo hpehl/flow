@@ -54,4 +54,4 @@ mvn gwt:devmode
 
 ## Demo
 
-There's a small demo available at https:://hpehl.github.io/flow which uses the API to execute tasks in parallel and sequential order. 
+There's a small demo available at https://hpehl.github.io/flow which uses the API to execute tasks in parallel and sequential order. 
