@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+     Copyright 2022 Red Hat
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         https://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>39</version>
+    </parent>
+
+    <groupId>org.jboss.hal</groupId>
+    <artifactId>hal-flow</artifactId>
+    <version>0.0.1</version>
+    <name>HAL Flow</name>
+    <packaging>gwt-app</packaging>
+
+    <properties>
+        <!-- Dependency versions -->
+        <version.elemento>1.0.10-gwtcom</version.elemento>
+        <version.gwt.com>2.9.0</version.gwt.com>
+        <version.node>v16.14.0</version.node>
+
+        <!-- Plugin versions -->
+        <version.frontend.plugin>1.12.1</version.frontend.plugin>
+        <version.gwt.maven.plugin>1.0.0</version.gwt.maven.plugin>
+
+        <!-- Build related -->
+        <encoding>UTF-8</encoding>
+        <gwt.draftCompile>true</gwt.draftCompile>
+        <gwt.style>DETAILED</gwt.style>
+        <java.version>11</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.min.version>3.2.5</maven.min.version>
+        <npm.script>dev</npm.script>
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt</artifactId>
+                <version>${version.gwt.com}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.elemento</groupId>
+                <artifactId>elemento-core</artifactId>
+                <version>${version.elemento}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.elemento</groupId>
+            <artifactId>elemento-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${version.frontend.plugin}</version>
+                <executions>
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>${version.node}</nodeVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-install</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-parcel</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run ${npm.script}</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.ltgt.gwt.maven</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <version>${version.gwt.maven.plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <devmodeArgs>
+                        <devmodeArg>-startupUrl</devmodeArg>
+                        <devmodeArg>flow/index.html</devmodeArg>
+                    </devmodeArgs>
+                    <draftCompile>${gwt.draftCompile}</draftCompile>
+                    <moduleName>org.jboss.hal.Flow</moduleName>
+                    <moduleShortName>flow</moduleShortName>
+                    <sourceLevel>${java.version}</sourceLevel>
+                    <style>${gwt.style}</style>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>.parcel-cache</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

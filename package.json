@@ -1,0 +1,23 @@
+{
+  "name": "hal-flow",
+  "private": true,
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "parcelIgnore": [
+    "flow.nocache.js"
+  ],
+  "source": "src/web/index.html",
+  "scripts": {
+    "watch": "parcel watch --public-url \"./\" --dist-dir target/gwt/devmode/war/flow",
+    "dev": "parcel build --public-url \"./\" --dist-dir target/gwt/devmode/war/flow --no-optimize",
+    "prod": "parcel build --public-url \"./\" --dist-dir target/flow"
+  },
+  "devDependencies": {
+    "@parcel/reporter-cli": "^2.4.0",
+    "@parcel/transformer-sass": "^2.4.0",
+    "parcel": "^2.4.0",
+    "parcel-resolver-ignore": "^2.0.0"
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^4.183.1"
+  }
+}
