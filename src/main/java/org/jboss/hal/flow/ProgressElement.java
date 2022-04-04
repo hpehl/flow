@@ -52,7 +52,6 @@ class ProgressElement implements Progress, IsElement<HTMLDivElement> {
 
     @Override
     public void finish() {
-        // div(root).css("pf-m-success");
         div(indicator).style("width:100%");
     }
 }

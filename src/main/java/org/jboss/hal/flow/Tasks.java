@@ -3,6 +3,8 @@ package org.jboss.hal.flow;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jboss.elemento.Id;
+
 import elemental2.dom.Response;
 import elemental2.promise.Promise;
 import jsinterop.annotations.JsOverlay;
@@ -10,6 +12,7 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 
+import static elemental2.dom.DomGlobal.console;
 import static elemental2.dom.DomGlobal.fetch;
 import static elemental2.dom.DomGlobal.setTimeout;
 
@@ -17,12 +20,14 @@ class Tasks {
 
     private static final double FAILURE_PERCENTAGE = 0.08;
 
+    private final String tasksId;
     private final Progress progress;
     private final boolean randomFailure;
     private final boolean failFast;
     private final Logger logger;
 
     Tasks(final Progress progress, final Logger logger, final boolean randomFailure, final boolean failFast) {
+        this.tasksId = Id.unique("tasks");
         this.progress = progress;
         this.randomFailure = randomFailure;
         this.failFast = failFast;
@@ -30,19 +35,29 @@ class Tasks {
     }
 
     void parallel() {
-        ParallelFlow<FlowContext> flow = Flow.parallel(new FlowContext(progress), tasks());
-        if (!failFast) {
-            flow = flow.onErrorContinue();
-        }
-        flow.subscribe(context -> logger.markSuccessful(), failure -> logger.markFailed());
+        Flow.parallel(new FlowContext(progress), tasks(), failFast)
+                .then(c -> {
+                    logger.markSuccessful();
+                    return null;
+                })
+                .catch_(error -> {
+                    console.log("error: " + error);
+                    logger.markFailed();
+                    return null;
+                });
     }
 
     void sequential() {
-        SequentialFlow<FlowContext> flow = Flow.series(new FlowContext(progress), tasks());
-        if (!failFast) {
-            flow = flow.onErrorResumeNext();
-        }
-        flow.subscribe(context -> logger.markSuccessful(), failure -> logger.markFailed());
+        Flow.series(new FlowContext(progress), tasks(), failFast)
+                .then(c -> {
+                    logger.markSuccessful();
+                    return null;
+                })
+                .catch_(error -> {
+                    console.log("error: " + error);
+                    logger.markFailed();
+                    return null;
+                });
     }
 
     private List<Task<FlowContext>> tasks() {
@@ -58,15 +73,16 @@ class Tasks {
     }
 
     private Task<FlowContext> delay(String id, long milliseconds) {
+        final String uniqueId = Id.build(tasksId, id);
         return context -> new Promise<>(
                 (resolve, reject) -> {
-                    logger.start(id, "Wait " + milliseconds + " ms...");
+                    logger.start(uniqueId, "Wait " + milliseconds + " ms...");
                     setTimeout(ignore -> {
                         if (blowUp()) {
-                            logger.failure(id, "Failed");
+                            logger.failure(uniqueId, "Failed");
                             reject.onInvoke("Random failure");
                         } else {
-                            logger.end(id, "Done");
+                            logger.end(uniqueId, "Done");
                             resolve.onInvoke(context);
                         }
                     }, milliseconds);
@@ -74,14 +90,15 @@ class Tasks {
     }
 
     private Task<FlowContext> currentTime(String id) {
+        final String uniqueId = Id.build(tasksId, id);
         return context -> {
-            logger.start(id, "Fetch time...");
+            logger.start(uniqueId, "Fetch time...");
             return fetchTime().then(time -> {
                 if (blowUp()) {
-                    logger.failure(id, "Failed");
+                    logger.failure(uniqueId, "Failed");
                     throw new RuntimeException("Random failure");
                 } else {
-                    logger.end(id, time);
+                    logger.end(uniqueId, time);
                     return Promise.resolve(context);
                 }
             });

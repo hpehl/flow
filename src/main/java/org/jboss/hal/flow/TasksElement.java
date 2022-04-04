@@ -1,6 +1,5 @@
 package org.jboss.hal.flow;
 
-import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 
 import elemental2.dom.Element;
@@ -13,7 +12,6 @@ import static org.jboss.elemento.Elements.pre;
 
 class TasksElement implements IsElement<HTMLElement>, Logger {
 
-    private final String tasksId;
     private final boolean randomFailure;
     private final boolean failFast;
     private final HTMLElement root;
@@ -21,10 +19,9 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
     private final HTMLElement body;
 
     TasksElement(final String mode, final boolean randomFailure, final boolean failFast) {
-        this.tasksId = Id.unique("tasks");
         this.randomFailure = randomFailure;
         this.failFast = failFast;
-        this.root = article().id(tasksId)
+        this.root = article()
                 .css("pf-c-card", "pf-u-min-width", "pf-u-min-height")
                 .style("--pf-u-min-width--MinWidth: 250px;--pf-u-min-height--MinHeight: 285px")
                 .add(div().css("pf-c-card__title").textContent(mode))
@@ -51,14 +48,14 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
 
     @Override
     public void start(final String id, final String message) {
-        div(body).add(pre().id(Id.build(tasksId, id))
+        div(body).add(pre().id(id)
                 .css("pf-u-font-size-sm", "pf-u-color-300", "pf-u-text-truncate")
                 .textContent(message));
     }
 
     @Override
     public void end(final String id, final String message) {
-        Element line = document.getElementById(Id.build(tasksId, id));
+        Element line = document.getElementById(id);
         if (line != null) {
             pre(line).textContent(line.textContent + message);
         }
@@ -66,7 +63,7 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
 
     @Override
     public void failure(final String id, final String message) {
-        Element line = document.getElementById(Id.build(tasksId, id));
+        Element line = document.getElementById(id);
         if (line != null) {
             line.classList.remove("pf-u-color-300");
             pre(line).css("pf-u-danger-color-200").textContent(line.textContent + message);
