@@ -13,10 +13,20 @@ The API basically consists of these classes:
 ```java
 public interface Flow {
 
-    static <C extends FlowContext> ParallelFlow<C> parallel(C context, List<Task<C>> tasks) {
+    static <C extends FlowContext> Promise<C> parallel(C context, List<Task<C>> tasks) {
+        return parallel(context, tasks, true);
     }
 
-    static <C extends FlowContext> SequentialFlow<C> series(C context, List<Task<C>> tasks) {
+    static <C extends FlowContext> Promise<C> parallel(C context, List<Task<C>> tasks, boolean failFast) {
+        // ...
+    }
+
+    static <C extends FlowContext> Promise<C> series(C context, List<Task<C>> tasks) {
+        return series(context, tasks, true);
+    }
+
+    static <C extends FlowContext> Promise<C> series(C context, List<Task<C>> tasks, boolean failFast) {
+        // ...
     }
 }
 ```
@@ -24,6 +34,7 @@ public interface Flow {
 ### Task
 
 ```java
+@JsFunction
 @FunctionalInterface
 public interface Task<C extends FlowContext> {
 
