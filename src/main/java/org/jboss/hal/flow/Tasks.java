@@ -19,19 +19,19 @@ import static elemental2.dom.DomGlobal.setTimeout;
 class Tasks {
 
     private static final double FAILURE_PERCENTAGE = 0.08;
+    static final String GOOD_TIME = "0";
+    static final int TIME_OUT = 8;
 
-    private final String tasksId;
     private final Progress progress;
+    private final Logger logger;
     private final boolean randomFailure;
     private final boolean failFast;
-    private final Logger logger;
 
     Tasks(final Progress progress, final Logger logger, final boolean randomFailure, final boolean failFast) {
-        this.tasksId = Id.unique("tasks");
         this.progress = progress;
+        this.logger = logger;
         this.randomFailure = randomFailure;
         this.failFast = failFast;
-        this.logger = logger;
     }
 
     void parallel() {
@@ -60,22 +60,36 @@ class Tasks {
                 });
     }
 
+    void repeat() {
+        Flow.repeat(new FlowContext(progress), currentTime(), context -> !context.pop("").endsWith(GOOD_TIME),
+                        TIME_OUT * 1000)
+                .then(c -> {
+                    logger.markSuccessful();
+                    return null;
+                })
+                .catch_(error -> {
+                    console.log("error: " + error);
+                    logger.markFailed();
+                    return null;
+                });
+    }
+
     private List<Task<FlowContext>> tasks() {
         return Arrays.asList(
-                currentTime("0"),
-                delay("1", 3000),
-                currentTime("2"),
-                delay("3", 2000),
-                currentTime("4"),
-                delay("5", 1000),
-                currentTime("6")
+                currentTime(),
+                delay(3000),
+                currentTime(),
+                delay(2000),
+                currentTime(),
+                delay(1000),
+                currentTime()
         );
     }
 
-    private Task<FlowContext> delay(String id, long milliseconds) {
-        final String uniqueId = Id.build(tasksId, id);
+    private Task<FlowContext> delay(long milliseconds) {
         return context -> new Promise<>(
                 (resolve, reject) -> {
+                    String uniqueId = Id.unique();
                     logger.start(uniqueId, "Wait " + milliseconds + " ms...");
                     setTimeout(ignore -> {
                         if (blowUp()) {
@@ -89,11 +103,12 @@ class Tasks {
                 });
     }
 
-    private Task<FlowContext> currentTime(String id) {
-        final String uniqueId = Id.build(tasksId, id);
+    private Task<FlowContext> currentTime() {
         return context -> {
+            String uniqueId = Id.unique();
             logger.start(uniqueId, "Fetch time...");
             return fetchTime().then(time -> {
+                context.push(time);
                 if (blowUp()) {
                     logger.failure(uniqueId, "Failed");
                     throw new RuntimeException("Random failure");

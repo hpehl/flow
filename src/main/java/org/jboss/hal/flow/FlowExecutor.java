@@ -3,13 +3,14 @@ package org.jboss.hal.flow;
 import java.util.Iterator;
 import java.util.List;
 
-import elemental2.promise.IThenable;
 import elemental2.promise.Promise;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.RejectCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.ResolveCallbackFn;
-import jsinterop.annotations.JsType;
 
-public class FlowExecutor<C extends FlowContext> {
+class FlowExecutor<C extends FlowContext> {
+
+    enum Mode {PARALLEL, SEQUENTIAL}
+
 
     private final Mode mode;
     private final C context;
@@ -20,13 +21,11 @@ public class FlowExecutor<C extends FlowContext> {
     FlowExecutor(final Mode mode, final C context, final List<Task<C>> tasks, final boolean failFast) {
         this.mode = mode;
         this.context = context;
+        this.context.progress.reset(tasks.size());
         this.tasks = tasks;
         this.iterator = tasks.iterator();
-        this.context.progress.reset(tasks.size());
         this.failFast = failFast;
     }
-
-    // ------------------------------------------------------ public API
 
     Promise<C> execute() {
         if (tasks.isEmpty()) {
@@ -43,11 +42,13 @@ public class FlowExecutor<C extends FlowContext> {
         }
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    // ------------------------------------------------------ parallel
+
+    @SuppressWarnings("unchecked")
     Promise<C> parallel() {
-        Promise[] promises = tasks.stream()
+        Promise<C>[] promises = tasks.stream()
                 .map(task -> task.apply(context).then(c -> {
-                    this.context.progress.tick();
+                    context.progress.tick();
                     return Promise.resolve(c);
                 }))
                 .toArray(Promise[]::new);
@@ -65,6 +66,8 @@ public class FlowExecutor<C extends FlowContext> {
                     });
         }
     }
+
+    // ------------------------------------------------------ sequential
 
     Promise<C> sequential() {
         return new Promise<>(this::next)
@@ -100,18 +103,5 @@ public class FlowExecutor<C extends FlowContext> {
                     return null;
                 });
 
-    }
-
-
-    enum Mode {PARALLEL, SEQUENTIAL}
-
-
-    // We use our own Promise API for the parallel flow
-    @JsType(isNative = true, name = "Promise", namespace = "<global>")
-    static class FlowPromise {
-
-        static native <V> Promise<Object[]> all(IThenable<? extends V>[] promises);
-
-        static native <V> Promise<Object[]> allSettled(IThenable<? extends V>[] promises);
     }
 }

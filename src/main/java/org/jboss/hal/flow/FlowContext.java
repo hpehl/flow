@@ -42,6 +42,11 @@ public class FlowContext {
         return (T) stack.pop();
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T pop(T defaultValue) {
+        return emptyStack() ? defaultValue : (T) stack.pop();
+    }
+
     /**
      * @return {@code true} if the context stack is empty, {@code false} otherwise.
      */

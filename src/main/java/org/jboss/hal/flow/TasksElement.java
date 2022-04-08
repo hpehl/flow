@@ -44,6 +44,10 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
         new Tasks(progressElement, this, randomFailure, failFast).sequential();
     }
 
+    void repeat() {
+        new Tasks(progressElement, this, randomFailure, failFast).repeat();
+    }
+
     // ------------------------------------------------------ logging
 
     @Override
