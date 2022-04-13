@@ -41,7 +41,7 @@ class FlowSequence<C extends FlowContext> implements Sequence<C> {
         this.context.progress.reset(tasks.size());
         this.tasks = tasks;
         this.iterator = tasks.iterator();
-        this.failFast = true;
+        this.failFast = DEFAULT_FAIL_FAST;
     }
 
     @Override

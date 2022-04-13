@@ -23,8 +23,6 @@ import static org.jboss.hal.flow.FlowSequence.Mode.SEQUENTIAL;
 
 public interface Flow<C extends FlowContext> {
 
-    // ------------------------------------------------------ factory methods
-
     static <C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks) {
         return new FlowSequence<>(PARALLEL, context, tasks);
     }
