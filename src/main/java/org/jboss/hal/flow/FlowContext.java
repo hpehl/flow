@@ -1,3 +1,18 @@
+/*
+ *  Copyright 2022 Red Hat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.jboss.hal.flow;
 
 import java.util.HashMap;
@@ -5,14 +20,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.gwt.safehtml.shared.SafeHtml;
+
 /**
- * General purpose context to be used inside a {@linkplain Flow flow} and {@linkplain Task tasks}. Provides a {@linkplain Progress progress indicator}, a stack and a map for
- * sharing data between tasks.
+ * General purpose context to be used inside a {@linkplain Flow flow} and {@linkplain Task tasks}. Provides a
+ * {@linkplain Progress progress indicator}, a stack and a map for sharing data between tasks.
  */
 public class FlowContext {
 
     private final Stack<Object> stack;
     private final Map<String, Object> data;
+    private SafeHtml failure;
     final Progress progress;
 
     public FlowContext() {
@@ -23,13 +41,15 @@ public class FlowContext {
         this.progress = progress;
         this.stack = new Stack<>();
         this.data = new HashMap<>();
+        this.failure = null;
     }
 
     /**
      * Pushes the value om top of the context stack.
      */
-    public <T> void push(T value) {
+    public <T> FlowContext push(T value) {
         stack.push(value);
+        return this;
     }
 
     /**
@@ -57,16 +77,24 @@ public class FlowContext {
     /**
      * Stores the value under the given key in the context map.
      */
-    public <T> void set(String key, T value) {
+    public <T> FlowContext set(String key, T value) {
         data.put(key, value);
+        return this;
+    }
+
+    /**
+     * @return the object for the given key from the context map or {@code null} if no such key was found.
+     */
+    public <T> T get(String key) {
+        return get(key, null);
     }
 
     /**
      * @return the object for the given key from the context map or {@code null} if no such key was found.
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(String key) {
-        return (T) data.get(key);
+    public <T> T get(String key, T defaultValue) {
+        return (T) data.getOrDefault(key, defaultValue);
     }
 
     /**
@@ -74,6 +102,15 @@ public class FlowContext {
      */
     public Set<String> keys() {
         return data.keySet();
+    }
+
+    public FlowContext failure(SafeHtml failure) {
+        this.failure = failure;
+        return this;
+    }
+
+    public boolean hasFailure() {
+        return failure != null;
     }
 
     @Override
