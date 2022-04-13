@@ -26,34 +26,67 @@ import static elemental2.dom.DomGlobal.clearTimeout;
 import static elemental2.dom.DomGlobal.setInterval;
 import static elemental2.dom.DomGlobal.setTimeout;
 
-class FlowLoop<C extends FlowContext> {
+class FlowRepeat<C extends FlowContext> implements Repeat<C> {
 
-    private static final String TIMEOUT_ERROR = "timeout";
-    private static final int INTERVAL = 500;
-
-    private final int timeout;
     private final C context;
     private final Task<C> task;
     private final Predicate<C> predicate;
-    private final boolean failFast;
+    private boolean failFast;
+    private long interval;
+    private long timeout;
     private String lastFailure;
     private double timeoutHandle;
     private double intervalHandle;
 
-    FlowLoop(final C context, final Task<C> task, final Predicate<C> predicate, final int timeout,
-            final boolean failFast) {
-        this.timeout = timeout;
+    FlowRepeat(final C context, final Task<C> task, final Predicate<C> predicate) {
         this.context = context;
         this.context.progress.reset();
         this.task = task;
         this.predicate = predicate;
-        this.failFast = failFast;
+        this.failFast = DEFAULT_FAIL_FAST;
+        this.timeout = DEFAULT_TIMEOUT;
+        this.interval = DEFAULT_INTERVAL;
         this.lastFailure = null;
         this.timeoutHandle = 0;
         this.intervalHandle = 0;
     }
 
-    Promise<C> execute() {
+    @Override
+    public Repeat<C> failFast(final boolean failFast) {
+        this.failFast = failFast;
+        return this;
+    }
+
+    @Override
+    public Repeat<C> interval(final long interval) {
+        this.interval = interval;
+        return this;
+    }
+
+    @Override
+    public Repeat<C> timeout(final long timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
+    @Override
+    public Promise<C> promise() {
+        return run();
+    }
+
+    @Override
+    public void subscribe(final SuccessCallback<C> onSuccess, final FailureCallback<C> onFailure) {
+        run().then(c -> {
+                    onSuccess.success(c);
+                    return null;
+                })
+                .catch_(error -> {
+                    onFailure.failed(context, String.valueOf(error));
+                    return null;
+                });
+    }
+
+    private Promise<C> run() {
         return new Promise<>((resolve, reject) -> {
             timeoutHandle = setTimeout(__ -> cancel(reject, TIMEOUT_ERROR), timeout);
             if (!predicate.test(context)) {
@@ -84,7 +117,7 @@ class FlowLoop<C extends FlowContext> {
                             return null;
                         });
             }
-        }, INTERVAL);
+        }, interval);
     }
 
     private void finish(ResolveCallbackFn<C> resolve, C context) {

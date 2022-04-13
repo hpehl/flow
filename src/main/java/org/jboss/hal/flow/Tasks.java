@@ -12,7 +12,6 @@ import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 import jsinterop.base.Js;
 
-import static elemental2.dom.DomGlobal.console;
 import static elemental2.dom.DomGlobal.fetch;
 import static elemental2.dom.DomGlobal.setTimeout;
 
@@ -20,7 +19,8 @@ class Tasks {
 
     private static final double FAILURE_PERCENTAGE = 0.08;
     static final String GOOD_TIME = "0";
-    static final int TIME_OUT = 8;
+    static final int INTERVAL = 1000;
+    static final int TIMEOUT = 8000;
 
     private final Progress progress;
     private final Logger logger;
@@ -35,43 +35,67 @@ class Tasks {
     }
 
     void parallel() {
-        Flow.parallel(new FlowContext(progress), tasks(), failFast)
+        Sequence<FlowContext> sequence = Flow.parallel(context(), tasks())
+                .failFast(failFast);
+        sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+
+        // alternative promise based implementation
+/*
+        sequence.promise()
                 .then(c -> {
                     logger.markSuccessful();
                     return null;
                 })
                 .catch_(error -> {
-                    console.log("error: " + error);
                     logger.markFailed();
                     return null;
                 });
+*/
     }
 
     void sequential() {
-        Flow.series(new FlowContext(progress), tasks(), failFast)
+        Sequence<FlowContext> sequence = Flow.series(context(), tasks())
+                .failFast(failFast);
+        sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+
+        // alternative promise based implementation
+/*
+        sequence.promise()
                 .then(c -> {
                     logger.markSuccessful();
                     return null;
                 })
                 .catch_(error -> {
-                    console.log("error: " + error);
                     logger.markFailed();
                     return null;
                 });
+*/
     }
 
     void repeat() {
-        Flow.repeat(new FlowContext(progress), currentTime(), context -> !context.pop("").endsWith(GOOD_TIME),
-                        TIME_OUT * 1000)
+        Repeat<FlowContext> repeat = Flow.repeat(context(), currentTime(),
+                        context -> !context.pop("").endsWith(GOOD_TIME))
+                .failFast(failFast)
+                .interval(INTERVAL)
+                .timeout(TIMEOUT);
+        repeat.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+
+        // alternative promise based implementation
+/*
+        repeat.promise()
                 .then(c -> {
                     logger.markSuccessful();
                     return null;
                 })
                 .catch_(error -> {
-                    console.log("error: " + error);
                     logger.markFailed();
                     return null;
                 });
+*/
+    }
+
+    private FlowContext context() {
+        return new FlowContext(progress);
     }
 
     private List<Task<FlowContext>> tasks() {

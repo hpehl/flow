@@ -18,35 +18,22 @@ package org.jboss.hal.flow;
 import java.util.List;
 import java.util.function.Predicate;
 
-import elemental2.promise.Promise;
+import static org.jboss.hal.flow.FlowSequence.Mode.PARALLEL;
+import static org.jboss.hal.flow.FlowSequence.Mode.SEQUENTIAL;
 
-import static org.jboss.hal.flow.FlowExecutor.Mode.PARALLEL;
-import static org.jboss.hal.flow.FlowExecutor.Mode.SEQUENTIAL;
+public interface Flow<C extends FlowContext> {
 
-public interface Flow {
+    // ------------------------------------------------------ factory methods
 
-    static <C extends FlowContext> Promise<C> parallel(C context, List<Task<C>> tasks) {
-        return parallel(context, tasks, true);
+    static <C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks) {
+        return new FlowSequence<>(PARALLEL, context, tasks);
     }
 
-    static <C extends FlowContext> Promise<C> parallel(C context, List<Task<C>> tasks, boolean failFast) {
-        return new FlowExecutor<>(PARALLEL, context, tasks, failFast).execute();
+    static <C extends FlowContext> Sequence<C> series(C context, List<Task<C>> tasks) {
+        return new FlowSequence<>(SEQUENTIAL, context, tasks);
     }
 
-    static <C extends FlowContext> Promise<C> series(C context, List<Task<C>> tasks) {
-        return series(context, tasks, true);
-    }
-
-    static <C extends FlowContext> Promise<C> series(C context, List<Task<C>> tasks, boolean failFast) {
-        return new FlowExecutor<>(SEQUENTIAL, context, tasks, failFast).execute();
-    }
-
-    static <C extends FlowContext> Promise<C> repeat(C context, Task<C> task, Predicate<C> until, int timeout) {
-        return new FlowLoop<>(context, task, until, timeout, false).execute();
-    }
-
-    static <C extends FlowContext> Promise<C> repeat(C context, Task<C> task, Predicate<C> until, int timeout,
-            boolean failFast) {
-        return new FlowLoop<>(context, task, until, timeout, failFast).execute();
+    static <C extends FlowContext> Repeat<C> repeat(C context, Task<C> task, Predicate<C> until) {
+        return new FlowRepeat<>(context, task, until);
     }
 }

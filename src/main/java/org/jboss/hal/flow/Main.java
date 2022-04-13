@@ -17,7 +17,8 @@ import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.EventType.bind;
 import static org.jboss.elemento.EventType.click;
 import static org.jboss.hal.flow.Tasks.GOOD_TIME;
-import static org.jboss.hal.flow.Tasks.TIME_OUT;
+import static org.jboss.hal.flow.Tasks.INTERVAL;
+import static org.jboss.hal.flow.Tasks.TIMEOUT;
 
 public class Main implements EntryPoint {
 
@@ -27,7 +28,8 @@ public class Main implements EntryPoint {
     private static final String DESCRIPTION2 = "The parallel and sequential tests execute seven tasks (four tasks " +
             "fetch the current time from worldtimeapi.org, three tasks wait for a given time).";
     private static final String DESCRIPTION3 = "The repeated test fetches the current time from worldtimeapi.org " +
-            "until the milliseconds ends in " + GOOD_TIME + " and cancels after a timeout of " + TIME_OUT + " seconds.";
+            "every " + INTERVAL + " ms until the time ends in " + GOOD_TIME + " and cancels after a timeout " +
+            "of " + (TIMEOUT / 1000) + " seconds.";
 
     HTMLElement tasksContainer;
     SwitchElement randomFailure;

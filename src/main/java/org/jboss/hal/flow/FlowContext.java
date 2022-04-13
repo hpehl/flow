@@ -30,7 +30,6 @@ public class FlowContext {
 
     private final Stack<Object> stack;
     private final Map<String, Object> data;
-    private SafeHtml failure;
     final Progress progress;
 
     public FlowContext() {
@@ -41,7 +40,6 @@ public class FlowContext {
         this.progress = progress;
         this.stack = new Stack<>();
         this.data = new HashMap<>();
-        this.failure = null;
     }
 
     /**
@@ -102,15 +100,6 @@ public class FlowContext {
      */
     public Set<String> keys() {
         return data.keySet();
-    }
-
-    public FlowContext failure(SafeHtml failure) {
-        this.failure = failure;
-        return this;
-    }
-
-    public boolean hasFailure() {
-        return failure != null;
     }
 
     @Override

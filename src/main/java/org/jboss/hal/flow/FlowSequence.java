@@ -22,28 +22,52 @@ import elemental2.promise.Promise;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.RejectCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.ResolveCallbackFn;
 
-class FlowExecutor<C extends FlowContext> {
+class FlowSequence<C extends FlowContext> implements Sequence<C> {
 
     enum Mode {
         PARALLEL, SEQUENTIAL
     }
 
+
     private final Mode mode;
     private final C context;
     private final List<Task<C>> tasks;
     private final Iterator<Task<C>> iterator;
-    private final boolean failFast;
+    private boolean failFast;
 
-    FlowExecutor(final Mode mode, final C context, final List<Task<C>> tasks, final boolean failFast) {
+    FlowSequence(final Mode mode, final C context, final List<Task<C>> tasks) {
         this.mode = mode;
         this.context = context;
         this.context.progress.reset(tasks.size());
         this.tasks = tasks;
         this.iterator = tasks.iterator();
-        this.failFast = failFast;
+        this.failFast = true;
     }
 
-    Promise<C> execute() {
+    @Override
+    public Sequence<C> failFast(final boolean failFast) {
+        this.failFast = failFast;
+        return this;
+    }
+
+    @Override
+    public Promise<C> promise() {
+        return run();
+    }
+
+    @Override
+    public void subscribe(final SuccessCallback<C> onSuccess, final FailureCallback<C> onFailure) {
+        run().then(c -> {
+                    onSuccess.success(c);
+                    return null;
+                })
+                .catch_(error -> {
+                    onFailure.failed(context, String.valueOf(error));
+                    return null;
+                });
+    }
+
+    private Promise<C> run() {
         if (tasks.isEmpty()) {
             return Promise.resolve(context);
         } else {
@@ -118,6 +142,5 @@ class FlowExecutor<C extends FlowContext> {
                     }
                     return null;
                 });
-
     }
 }
