@@ -42,8 +42,10 @@ Flow.sequential(new FlowContext(), tasks)
 The result can be returned as `Promise<C>` to be returned to a calling method
 
 ```java
-List<Task<FloContext>> tasks = ...;
-Promise<C> promise = Flow.sequential(new FlowContext(), tasks).promise();
+void Promise<FlowContext> run() {
+    List<Task<FloContext>> tasks = ...;
+    return Flow.sequential(new FlowContext(), tasks).promise();
+}
 ```
 
 or it can be directly processed using methods like `then()`, `catch_()` or `finally_()`:
@@ -75,8 +77,6 @@ Flow.parallel(new FlowContext(), tasks)
         .subscribe(context -> console.log("Success!"),
                 (context, failure) -> console.error("Failed: " + failure));
 ```
-
-The tasks are executed using [`Promise.all()`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise/all) resp [`Promise.allSettled()`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled). 
 
 ### Sequential Execution
 
