@@ -8,13 +8,18 @@ The flow API is currently only used in the [HAL management console](https://hal.
 
 The entrypoint to the flow API is the interface `Flow<C extends FlowContext>`. It provides three methods:
 
-1. `static <C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks)`
-2. `static <C extends FlowContext> Sequence<C> series(C context, List<Task<C>> tasks)`
-3. `static <C extends FlowContext> While<C> while_(C context, Task<C> task, Predicate<C> until)`
+```java
+static <C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks)
 
-Tasks are implemented using a functional interface: 
+static <C extends FlowContext> Sequence<C> sequential(C context, List<Task<C>> tasks)
+
+static <C extends FlowContext> While<C> while_(C context, Task<C> task, Predicate<C> until)
+```
+
+Tasks are implemented using a simple interface: 
 
 ```java
+@FunctionalInterface
 public interface Task<C extends FlowContext> {
 
     Promise<C> apply(C context);
