@@ -3,6 +3,8 @@ package org.jboss.hal.flow;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.apache.tools.ant.taskdefs.Sequential;
+
 import elemental2.promise.Promise;
 
 import static org.jboss.hal.flow.Flow.parallel;
@@ -23,13 +25,36 @@ public class ParallelTasks<C extends FlowContext> implements Task<C> {
     /**
      * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel} re-using an existing {@linkplain FlowContext context}.
      * <p>
+     * The task fails fast and re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
+     *
+     * @param tasks the list of tasks to execute
+     */
+    public ParallelTasks(final List<Task<C>> tasks) {
+        this(null, tasks, Sequence.DEFAULT_FAIL_FAST);
+    }
+
+    /**
+     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel} re-using an existing {@linkplain FlowContext context}.
+     * <p>
      * The task re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
      *
-     * @param tasks    The list of tasks to execute
-     * @param failFast whether the execution of the list should fail fast or fail last
+     * @param tasks    the list of tasks to execute
+     * @param failFast whether the execution of the tasks should fail fast or fail last
      */
     public ParallelTasks(final List<Task<C>> tasks, final boolean failFast) {
         this(null, tasks, failFast);
+    }
+
+    /**
+     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel} using a new {@linkplain FlowContext context}.
+     * <p>
+     * The task fails fast and uses the given {@linkplain FlowContext context} for the execution of the {@linkplain Task asynchronous tasks}.
+     *
+     * @param context the context shared between tasks
+     * @param tasks   The list of tasks to execute
+     */
+    public ParallelTasks(final C context, final List<Task<C>> tasks) {
+        this(context, tasks, Sequence.DEFAULT_FAIL_FAST);
     }
 
     /**
@@ -39,7 +64,7 @@ public class ParallelTasks<C extends FlowContext> implements Task<C> {
      *
      * @param context  the context shared between tasks
      * @param tasks    The list of tasks to execute
-     * @param failFast whether the execution of the list should fail fast or fail last
+     * @param failFast whether the execution of the tasks should fail fast or fail last
      */
     public ParallelTasks(final C context, final List<Task<C>> tasks, final boolean failFast) {
         this.context = context;

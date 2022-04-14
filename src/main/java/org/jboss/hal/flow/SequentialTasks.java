@@ -23,6 +23,17 @@ public class SequentialTasks<C extends FlowContext> implements Task<C> {
     /**
      * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#sequential(FlowContext, List) order} re-using an existing {@linkplain FlowContext context}.
      * <p>
+     * The task fails fast and re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
+     *
+     * @param tasks    The list of tasks to execute
+     */
+    public SequentialTasks(final List<Task<C>> tasks) {
+        this(null, tasks, Sequence.DEFAULT_FAIL_FAST);
+    }
+
+    /**
+     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#sequential(FlowContext, List) order} re-using an existing {@linkplain FlowContext context}.
+     * <p>
      * The task re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
      *
      * @param tasks    The list of tasks to execute
@@ -30,6 +41,18 @@ public class SequentialTasks<C extends FlowContext> implements Task<C> {
      */
     public SequentialTasks(final List<Task<C>> tasks, final boolean failFast) {
         this(null, tasks, failFast);
+    }
+
+    /**
+     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#sequential(FlowContext, List) order} using a new {@linkplain FlowContext context}.
+     * <p>
+     * The task fails fast and uses the given {@linkplain FlowContext context} for the execution of the {@linkplain Task asynchronous tasks}.
+     *
+     * @param context  the context shared between tasks
+     * @param tasks    The list of tasks to execute
+     */
+    public SequentialTasks(final C context, final List<Task<C>> tasks) {
+        this(context, tasks, Sequence.DEFAULT_FAIL_FAST);
     }
 
     /**

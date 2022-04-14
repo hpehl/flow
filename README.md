@@ -6,17 +6,13 @@ The flow API is currently only used in the [HAL management console](https://hal.
 
 ## API 
 
-The entrypoint to the flow API is the interface `Flow<C extends FlowContext>`. It provides three methods:
+The entrypoint to the flow API is the interface `Flow<C extends FlowContext>`. It provides three static methods:
 
-```java
-static <C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks)
+1. `<C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks)`
+2. `<C extends FlowContext> Sequence<C> sequential(C context, List<Task<C>> tasks)`
+3. `<C extends FlowContext> While<C> while_(C context, Task<C> task, Predicate<C> until)`
 
-static <C extends FlowContext> Sequence<C> sequential(C context, List<Task<C>> tasks)
-
-static <C extends FlowContext> While<C> while_(C context, Task<C> task, Predicate<C> until)
-```
-
-Tasks are implemented using a simple interface: 
+Tasks need to implement a simple interface: 
 
 ```java
 @FunctionalInterface
@@ -26,26 +22,73 @@ public interface Task<C extends FlowContext> {
 }
 ```
 
-All tasks share a common context. The context provides a progress indicator to signal the progress of the task execution and a stack and a map for sharing data between asynchronous tasks.
+All tasks share a common context. The context provides an indicator to signal the progress of the task execution plus a stack and a map for sharing data between tasks. 
+
+The result of the task execution can be processed in different ways:
+
+**Subscription**
+
+The subscription is a terminal operation which supports one callback for successful and one for failed execution:
+
+```java
+List<Task<FloContext>> tasks = ...;
+Flow.sequential(new FlowContext(), tasks)
+        .subscribe(context -> console.log("Success!"),
+                (context, failure) -> console.error("Failed: " + failure));
+```
+
+**Promise**
+
+The result can be returned as `Promise<C>` to be returned to a calling method
+
+```java
+List<Task<FloContext>> tasks = ...;
+Promise<C> promise = Flow.sequential(new FlowContext(), tasks).promise();
+```
+
+or it can be directly processed using methods like `then()`, `catch_()` or `finally_()`:
+
+```java
+List<Task<FloContext>> tasks = ...;
+Flow.sequential(new FlowContext(), tasks)
+        .then(context -> {
+            // get and process data from the context 
+        })
+        .catch_(error -> {
+            // error handling
+        });
+```
 
 ### Parallel Execution
 
-To execute a list of asynchronous tasks in parallel, use something like this 
+Parallel execution runs all tasks simultaneously and returns when all tasks have finished. In case of a failure you can specify to 
+
+- fail fast: fail as soon as the first task fails or
+- fail last: don't fail if one or more task fail and continue with the execution of the remaining tasks.
+
+To execute a list of tasks in parallel, use something like this 
 
 ```java
-List<Task<FloContext>> task = ...;
+List<Task<FloContext>> tasks = ...;
 Flow.parallel(new FlowContext(), tasks)
         .failFast(true)
         .subscribe(context -> console.log("Success!"),
                 (context, failure) -> console.error("Failed: " + failure));
 ```
 
+The tasks are executed using [`Promise.all()`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise/all) resp [`Promise.allSettled()`](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled). 
+
 ### Sequential Execution
 
-To execute a list of asynchronous tasks in order, use something like this
+Sequential execution runs the tasks in order. That is the second task starts after the first finished. In case of a failure you can specify to
+
+- fail fast: fail as soon as the first task fails or
+- fail last: don't fail if one or more task fail and continue with the execution of the remaining tasks.  
+
+To execute a list of tasks in order, use something like this
 
 ```java
-List<Task<FloContext>> task = ...;
+List<Task<FloContext>> tasks = ...;
 Flow.sequential(new FlowContext(), tasks)
         .failFast(true)
         .subscribe(context -> console.log("Success!"),
@@ -54,11 +97,46 @@ Flow.sequential(new FlowContext(), tasks)
 
 ### Repeated Execution
 
-Pending...
+Repeated execution corresponds to a `while` loop and runs a task as long as a condition evaluates to `true`. For the repeated execution you can specify 
+
+- whether to fail fast or fail last
+- the interval between the iterations
+- a timeout after the loop is canceled
+
+To repeatedly execute a task, use something like this
+
+```java
+Task<FlowContext> task = context -> Promise.resolve(context.push(new Random().nextInt(10)));
+Flow.while_(new FlowContext(), task, context -> context.<Integer>pop() == 3)
+        .interval(600)
+        .timeout(3_000)
+        .subscribe(context -> console.log("Got a three!"),
+                (context, failure) -> console.log("No luck!"));
+```
 
 ### Nested Execution
 
-Pending...
+The flow API makes it easy to nest task executions. You could for instance run five tasks in parallel, then execute three tasks in order and finally execute a task until a condition is met. To do so, the API provides different task implementation:
+
+- `ParallelTasks<C>`
+- `SequentialTasks<C>`
+- `WhileTask<C>`
+
+Here's an example how to use nested tasks:
+
+```java
+List<Task<FlowContext>> parallelTasks = ...;
+List<Task<FlowContext>> sequentialTasks = ...;
+Task task = ...;
+Predicate<FloContext> condition = ...;
+
+Flow.sequential(new FlowContext(), Arrays.asList(
+        new ParallelTasks<>(parallelTasks),
+        new SequentialTasks<>(sequentialTasks),
+        new WhileTask<>(task, condition)))
+        .subscribe(context -> console.log("Success!"),
+                (context, failure) -> console.error("Failed: " + failure));
+```
 
 ## Build & Run
 
