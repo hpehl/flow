@@ -17,7 +17,11 @@ package org.jboss.hal.flow;
 
 import java.util.function.Predicate;
 
+import elemental2.promise.IThenable;
+import elemental2.promise.IThenable.ThenOnFulfilledCallbackFn;
 import elemental2.promise.Promise;
+import elemental2.promise.Promise.CatchOnRejectedCallbackFn;
+import elemental2.promise.Promise.FinallyOnFinallyCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.RejectCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.ResolveCallbackFn;
 
@@ -26,7 +30,7 @@ import static elemental2.dom.DomGlobal.clearTimeout;
 import static elemental2.dom.DomGlobal.setInterval;
 import static elemental2.dom.DomGlobal.setTimeout;
 
-class FlowRepeat<C extends FlowContext> implements Repeat<C> {
+class FlowWhile<C extends FlowContext> implements While<C> {
 
     private final C context;
     private final Task<C> task;
@@ -38,7 +42,7 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
     private double timeoutHandle;
     private double intervalHandle;
 
-    FlowRepeat(final C context, final Task<C> task, final Predicate<C> predicate) {
+    FlowWhile(final C context, final Task<C> task, final Predicate<C> predicate) {
         this.context = context;
         this.context.progress.reset();
         this.task = task;
@@ -52,21 +56,42 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
     }
 
     @Override
-    public Repeat<C> failFast(final boolean failFast) {
+    public While<C> failFast(final boolean failFast) {
         this.failFast = failFast;
         return this;
     }
 
     @Override
-    public Repeat<C> interval(final long interval) {
+    public While<C> interval(final long interval) {
         this.interval = interval;
         return this;
     }
 
     @Override
-    public Repeat<C> timeout(final long timeout) {
+    public While<C> timeout(final long timeout) {
         this.timeout = timeout;
         return this;
+    }
+
+    @Override
+    public <V> Promise<V> then(final ThenOnFulfilledCallbackFn<? super C, ? extends V> onFulfilled) {
+        return run().then(onFulfilled);
+    }
+
+    @Override
+    public <V> Promise<V> then(final ThenOnFulfilledCallbackFn<? super C, ? extends V> onFulfilled,
+            final IThenable.ThenOnRejectedCallbackFn<? extends V> onRejected) {
+        return run().then(onFulfilled, onRejected);
+    }
+
+    @Override
+    public <V> Promise<V> catch_(final CatchOnRejectedCallbackFn<? extends V> onRejected) {
+        return run().catch_(onRejected);
+    }
+
+    @Override
+    public Promise<C> finally_(final FinallyOnFinallyCallbackFn onFinally) {
+        return run().finally_(onFinally);
     }
 
     @Override

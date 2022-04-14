@@ -1,5 +1,7 @@
 package org.jboss.hal.flow;
 
+import elemental2.promise.Promise;
+
 interface Logger {
 
     void start(String id, String message);
@@ -8,7 +10,7 @@ interface Logger {
 
     void failure(String id, String message);
 
-    void markSuccessful();
+    Promise<Void> markSuccessful();
 
-    void markFailed();
+    Promise<Void> markFailed();
 }

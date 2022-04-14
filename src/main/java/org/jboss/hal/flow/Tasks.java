@@ -1,7 +1,8 @@
 package org.jboss.hal.flow;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+import java.util.function.Predicate;
 
 import org.jboss.elemento.Id;
 
@@ -14,6 +15,7 @@ import jsinterop.base.Js;
 
 import static elemental2.dom.DomGlobal.fetch;
 import static elemental2.dom.DomGlobal.setTimeout;
+import static java.util.Arrays.asList;
 
 class Tasks {
 
@@ -34,72 +36,63 @@ class Tasks {
         this.failFast = failFast;
     }
 
+    // ------------------------------------------------------ task executions
+
     void parallel() {
         Sequence<FlowContext> sequence = Flow.parallel(context(), tasks())
                 .failFast(failFast);
-        sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+        if (new Random().nextBoolean()) {
+            sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+        } else {
+            sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
 
-        // alternative promise based implementation
-/*
-        sequence.promise()
-                .then(c -> {
-                    logger.markSuccessful();
-                    return null;
-                })
-                .catch_(error -> {
-                    logger.markFailed();
-                    return null;
-                });
-*/
+        }
     }
 
     void sequential() {
         Sequence<FlowContext> sequence = Flow.series(context(), tasks())
                 .failFast(failFast);
-        sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
-
-        // alternative promise based implementation
-/*
-        sequence.promise()
-                .then(c -> {
-                    logger.markSuccessful();
-                    return null;
-                })
-                .catch_(error -> {
-                    logger.markFailed();
-                    return null;
-                });
-*/
+        if (new Random().nextBoolean()) {
+            sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+        } else {
+            sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
+        }
     }
 
-    void repeat() {
-        Repeat<FlowContext> repeat = Flow.repeat(context(), currentTime(),
-                        context -> !context.pop("").endsWith(GOOD_TIME))
+    void while_() {
+        While<FlowContext> while_ = Flow.while_(context(), currentTime(), wrongTime())
                 .failFast(failFast)
                 .interval(INTERVAL)
                 .timeout(TIMEOUT);
-        repeat.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
-
-        // alternative promise based implementation
-/*
-        repeat.promise()
-                .then(c -> {
-                    logger.markSuccessful();
-                    return null;
-                })
-                .catch_(error -> {
-                    logger.markFailed();
-                    return null;
-                });
-*/
+        if (new Random().nextBoolean()) {
+            while_.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+        } else {
+            while_.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
+        }
     }
 
-    private FlowContext context() {
-        return new FlowContext(progress);
+    void nested() {
+        Sequence<FlowContext> sequence = Flow.series(context(), nestedTasks())
+                .failFast(failFast);
+        if (new Random().nextBoolean()) {
+            sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
+        } else {
+            sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
+        }
+    }
+
+    // ------------------------------------------------------ factory methods
+
+    private List<Task<FlowContext>> nestedTasks() {
+        return asList(
+                new ParallelTasks<>(tasks(), failFast),
+                new SequentialTasks<>(tasks(), failFast),
+                new WhileTask<>(currentTime(), wrongTime(), failFast, INTERVAL, TIMEOUT)
+        );
     }
 
     private List<Task<FlowContext>> tasks() {
-        return Arrays.asList(
+        return asList(
                 currentTime(),
                 delay(3000),
                 currentTime(),
@@ -109,6 +102,16 @@ class Tasks {
                 currentTime()
         );
     }
+
+    private FlowContext context() {
+        return new FlowContext(progress);
+    }
+
+    private Predicate<FlowContext> wrongTime() {
+        return context -> !context.pop("").endsWith(GOOD_TIME);
+    }
+
+    // ------------------------------------------------------ task implementations
 
     private Task<FlowContext> delay(long milliseconds) {
         return context -> new Promise<>(

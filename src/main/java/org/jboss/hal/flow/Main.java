@@ -23,13 +23,15 @@ import static org.jboss.hal.flow.Tasks.TIMEOUT;
 public class Main implements EntryPoint {
 
 
-    private static final String DESCRIPTION = "This page tests the parallel, sequential and repeated execution of " +
-            "asynchronous tasks.";
-    private static final String DESCRIPTION2 = "The parallel and sequential tests execute seven tasks (four tasks " +
+    private static final String DESCRIPTION_0 = "This page tests parallel, sequential, repeated and nested execution " +
+            "of asynchronous tasks.";
+    private static final String DESCRIPTION_1 = "The parallel and sequential tests execute seven tasks (four tasks " +
             "fetch the current time from worldtimeapi.org, three tasks wait for a given time).";
-    private static final String DESCRIPTION3 = "The repeated test fetches the current time from worldtimeapi.org " +
-            "every " + INTERVAL + " ms until the time ends in " + GOOD_TIME + " and cancels after a timeout " +
-            "of " + (TIMEOUT / 1000) + " seconds.";
+    private static final String DESCRIPTION_2 = "The while test fetches the current time from worldtimeapi.org " +
+            "every " + INTERVAL + " ms as long as the time doesn't end in " + GOOD_TIME + " and cancels after a " +
+            "timeout of " + (TIMEOUT / 1000) + " seconds.";
+    private static final String DESCRIPTION_3 = "The nested test executes the seven tasks in parallel, " +
+            "then in sequence and finally the repeated test.";
 
     HTMLElement tasksContainer;
     SwitchElement randomFailure;
@@ -49,11 +51,13 @@ public class Main implements EntryPoint {
                                                 .add(div().css("pf-c-content")
                                                         .add(h(1, "Flow"))
                                                         .add(p()
-                                                                .add(DESCRIPTION)
+                                                                .add(DESCRIPTION_0)
                                                                 .add(br())
-                                                                .add(DESCRIPTION2)
+                                                                .add(DESCRIPTION_1)
                                                                 .add(br())
-                                                                .add(DESCRIPTION3)))))
+                                                                .add(DESCRIPTION_2)
+                                                                .add(br())
+                                                                .add(DESCRIPTION_3)))))
                                 .add(section().css("pf-c-page__main-section", "pf-m-limit-width", "pf-m-light")
                                         .add(div().css("pf-c-page__main-body")
                                                 .add(span().css("pf-l-flex", "pf-m-column", "pf-u-mb-md")
@@ -66,8 +70,11 @@ public class Main implements EntryPoint {
                                                         .textContent("Sequential")
                                                         .on(click, e -> sequential()))
                                                 .add(button().css("pf-c-button", "pf-m-primary", "pf-u-mr-sm")
-                                                        .textContent("Repeat")
-                                                        .on(click, e -> repeat()))
+                                                        .textContent("While")
+                                                        .on(click, e -> while_()))
+                                                .add(button().css("pf-c-button", "pf-m-primary", "pf-u-mr-sm")
+                                                        .textContent("Nested")
+                                                        .on(click, e -> nested()))
                                                 .add(button().css("pf-c-button", "pf-m-secondary")
                                                         .textContent("Clear")
                                                         .on(click, e -> clear()))))
@@ -91,11 +98,18 @@ public class Main implements EntryPoint {
         tasksElement.sequential();
     }
 
-    void repeat() {
+    void while_() {
         String title = "Repeat" + (failFast.value() ? " (fail fast)" : " (fail last)");
         TasksElement tasksElement = new TasksElement(title, randomFailure.value(), failFast.value());
         div(tasksContainer).add(tasksElement);
-        tasksElement.repeat();
+        tasksElement.while_();
+    }
+
+    void nested() {
+        String title = "Nested" + (failFast.value() ? " (fail fast)" : " (fail last)");
+        TasksElement tasksElement = new TasksElement(title, randomFailure.value(), failFast.value());
+        div(tasksContainer).add(tasksElement);
+        tasksElement.nested();
     }
 
     void clear() {

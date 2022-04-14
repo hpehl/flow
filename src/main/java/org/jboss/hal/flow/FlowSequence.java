@@ -18,6 +18,7 @@ package org.jboss.hal.flow;
 import java.util.Iterator;
 import java.util.List;
 
+import elemental2.promise.IThenable;
 import elemental2.promise.Promise;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.RejectCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.ResolveCallbackFn;
@@ -48,6 +49,27 @@ class FlowSequence<C extends FlowContext> implements Sequence<C> {
     public Sequence<C> failFast(final boolean failFast) {
         this.failFast = failFast;
         return this;
+    }
+
+    @Override
+    public <V> Promise<V> then(final IThenable.ThenOnFulfilledCallbackFn<? super C, ? extends V> onFulfilled) {
+        return run().then(onFulfilled);
+    }
+
+    @Override
+    public <V> Promise<V> then(final IThenable.ThenOnFulfilledCallbackFn<? super C, ? extends V> onFulfilled,
+            final IThenable.ThenOnRejectedCallbackFn<? extends V> onRejected) {
+        return run().then(onFulfilled, onRejected);
+    }
+
+    @Override
+    public <V> Promise<V> catch_(final Promise.CatchOnRejectedCallbackFn<? extends V> onRejected) {
+        return run().catch_(onRejected);
+    }
+
+    @Override
+    public Promise<C> finally_(final Promise.FinallyOnFinallyCallbackFn onFinally) {
+        return run().finally_(onFinally);
     }
 
     @Override
@@ -122,7 +144,7 @@ class FlowSequence<C extends FlowContext> implements Sequence<C> {
         iterator.next().apply(context)
                 .then(c -> {
                     if (iterator.hasNext()) {
-                        context.progress.tick();
+                        c.progress.tick();
                         next(resolve, reject);
                     } else {
                         resolve.onInvoke(c);

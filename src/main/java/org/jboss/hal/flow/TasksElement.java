@@ -4,6 +4,7 @@ import org.jboss.elemento.IsElement;
 
 import elemental2.dom.Element;
 import elemental2.dom.HTMLElement;
+import elemental2.promise.Promise;
 
 import static elemental2.dom.DomGlobal.document;
 import static org.jboss.elemento.Elements.article;
@@ -44,8 +45,12 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
         new Tasks(progressElement, this, randomFailure, failFast).sequential();
     }
 
-    void repeat() {
-        new Tasks(progressElement, this, randomFailure, failFast).repeat();
+    void while_() {
+        new Tasks(progressElement, this, randomFailure, failFast).while_();
+    }
+
+    void nested() {
+        new Tasks(progressElement, this, randomFailure, failFast).nested();
     }
 
     // ------------------------------------------------------ logging
@@ -75,12 +80,14 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
     }
 
     @Override
-    public void markSuccessful() {
+    public Promise<Void> markSuccessful() {
         article(root).css("fl-status__done");
+        return Promise.resolve((Void) null);
     }
 
     @Override
-    public void markFailed() {
+    public Promise<Void> markFailed() {
         article(root).css("fl-status__error");
+        return Promise.resolve((Void) null);
     }
 }
