@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * Interface to reflect the progress when executing a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel}, in {@linkplain Flow#series(FlowContext, List) sequence} or {@linkplain Flow#while_(FlowContext, Task, Predicate) while} a {@linkplain Predicate predicate} evaluates to {@code true}.
+ * Interface to reflect the progress when executing a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel}, in {@linkplain Flow#sequential(FlowContext, List) sequence} or {@linkplain Flow#while_(FlowContext, Task, Predicate) while} a {@linkplain Predicate predicate} evaluates to {@code true}.
  * <p>
  * Implementations should use some kind of graphical indicators such as a spinner or <a href="https://developer.mozilla.org/docs/Web/HTML/Element/progress">progress element</a>.
  */

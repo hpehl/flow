@@ -3,7 +3,7 @@ package org.jboss.hal.flow;
 import java.util.List;
 
 /**
- * An interface to control the {@linkplain Flow#parallel(FlowContext, List) parallel} and {@linkplain Flow#series(FlowContext, List) sequential} execution of {@linkplain Task asynchronous tasks}.
+ * An interface to control the {@linkplain Flow#parallel(FlowContext, List) parallel} and {@linkplain Flow#sequential(FlowContext, List) sequential} execution of {@linkplain Task asynchronous tasks}.
  *
  * @param <C> the type of the {@linkplain FlowContext context} shared between tasks
  */

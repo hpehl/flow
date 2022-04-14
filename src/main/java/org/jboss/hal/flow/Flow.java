@@ -22,7 +22,7 @@ import static org.jboss.hal.flow.FlowSequence.Mode.PARALLEL;
 import static org.jboss.hal.flow.FlowSequence.Mode.SEQUENTIAL;
 
 /**
- * An interface to execute a list of {@linkplain Task asynchronous tasks} in {@linkplain #parallel(FlowContext, List) parallel}, in {@linkplain #series(FlowContext, List) sequence} or {@linkplain #while_(FlowContext, Task, Predicate) while} a {@linkplain Predicate predicate} evaluates to {@code true}.
+ * An interface to execute a list of {@linkplain Task asynchronous tasks} in {@linkplain #parallel(FlowContext, List) parallel}, in {@linkplain #sequential(FlowContext, List) sequence} or {@linkplain #while_(FlowContext, Task, Predicate) while} a {@linkplain Predicate predicate} evaluates to {@code true}.
  * <p>
  * The {@linkplain Task tasks} share a {@linkplain FlowContext context} that can be used to store data in a map or on a stack.
  *
@@ -50,7 +50,7 @@ public interface Flow<C extends FlowContext> {
      * @param <C>     the type of the shared context
      * @return an interface to control whether the execution of the tasks should fail fast or fail last
      */
-    static <C extends FlowContext> Sequence<C> series(C context, List<Task<C>> tasks) {
+    static <C extends FlowContext> Sequence<C> sequential(C context, List<Task<C>> tasks) {
         return new FlowSequence<>(SEQUENTIAL, context, tasks);
     }
 

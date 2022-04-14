@@ -1,53 +1,61 @@
 # Flow 
 
-Parallel and sequential execution of asynchronous tasks based on GWT and Promises. 
+Parallel, sequential, repeated and nested execution of asynchronous tasks based on GWT and Promises. 
 
-This repository contains a small API to execute asynchronous tasks in parallel or one after the other. The API is used in the [HAL management console](https://hal.github.io). This repository is mainly used as a playground to evolve and test the API.  
+The flow API is currently only used in the [HAL management console](https://hal.github.io) and not available on its own. This repository is mainly used as a playground to evolve and test the API. If there's interest to make this available on its own, leave a note in the [discussions](https://github.com/hpehl/flow/discussions)!  
 
 ## API 
 
-The API basically consists of these classes:
+The entrypoint to the flow API is the interface `Flow<C extends FlowContext>`. It provides three methods:
 
-### Flow
+1. `static <C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks)`
+2. `static <C extends FlowContext> Sequence<C> series(C context, List<Task<C>> tasks)`
+3. `static <C extends FlowContext> While<C> while_(C context, Task<C> task, Predicate<C> until)`
 
-```java
-public interface Flow {
-
-    static <C extends FlowContext> Promise<C> parallel(C context, List<Task<C>> tasks) {
-        return parallel(context, tasks, true);
-    }
-
-    static <C extends FlowContext> Promise<C> parallel(C context, List<Task<C>> tasks, boolean failFast) {
-        // ...
-    }
-
-    static <C extends FlowContext> Promise<C> series(C context, List<Task<C>> tasks) {
-        return series(context, tasks, true);
-    }
-
-    static <C extends FlowContext> Promise<C> series(C context, List<Task<C>> tasks, boolean failFast) {
-        // ...
-    }
-}
-```
-
-### Task
+Tasks are implemented using a functional interface: 
 
 ```java
-@JsFunction
-@FunctionalInterface
 public interface Task<C extends FlowContext> {
 
-    @JsAsync
     Promise<C> apply(C context);
 }
 ```
 
-### FlowContext
+All tasks share a common context. The context provides a progress indicator to signal the progress of the task execution and a stack and a map for sharing data between asynchronous tasks.
 
-The `FlowContext` acts as a common data structure which is shared between the tasks. It can be used to store and retrieve arbitrary data. 
+### Parallel Execution
 
-## Build
+To execute a list of asynchronous tasks in parallel, use something like this 
+
+```java
+List<Task<FloContext>> task = ...;
+Flow.parallel(new FlowContext(), tasks)
+        .failFast(true)
+        .subscribe(context -> console.log("Success!"),
+                (context, failure) -> console.error("Failed: " + failure));
+```
+
+### Sequential Execution
+
+To execute a list of asynchronous tasks in order, use something like this
+
+```java
+List<Task<FloContext>> task = ...;
+Flow.sequential(new FlowContext(), tasks)
+        .failFast(true)
+        .subscribe(context -> console.log("Success!"),
+                (context, failure) -> console.error("Failed: " + failure));
+```
+
+### Repeated Execution
+
+Pending...
+
+### Nested Execution
+
+Pending...
+
+## Build & Run
 
 To build locally use
 
@@ -55,14 +63,12 @@ To build locally use
 mvn verify
 ```
 
-## Run
-
-To run locally use 
+To run locally use
 
 ```shell
 mvn gwt:devmode
 ```
 
-## Demo
+## Try Online
 
-There's a small demo available at https://hpehl.github.io/flow which uses the API to execute tasks in parallel and sequential order. 
+There's a demo available at https://hpehl.github.io/flow which uses the flow API to execute tasks in parallel, in order, in a while loop and nested inside each other. 

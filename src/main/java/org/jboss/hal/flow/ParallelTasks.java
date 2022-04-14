@@ -10,7 +10,7 @@ import static org.jboss.hal.flow.Flow.parallel;
 /**
  * A task implementation that executes a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel}.
  * <p>
- * This implementation makes it easy to nest the execution of {@linkplain Task asynchronous tasks} inside a call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#series(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
+ * This implementation makes it easy to nest the execution of {@linkplain Task asynchronous tasks} inside a call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
  *
  * @param <C> the type of the {@linkplain FlowContext context} shared between tasks
  */
@@ -23,7 +23,7 @@ public class ParallelTasks<C extends FlowContext> implements Task<C> {
     /**
      * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel} re-using an existing {@linkplain FlowContext context}.
      * <p>
-     * The task re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#series(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
+     * The task re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
      *
      * @param tasks    The list of tasks to execute
      * @param failFast whether the execution of the list should fail fast or fail last

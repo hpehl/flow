@@ -5,12 +5,12 @@ import java.util.function.Predicate;
 
 import elemental2.promise.Promise;
 
-import static org.jboss.hal.flow.Flow.series;
+import static org.jboss.hal.flow.Flow.sequential;
 
 /**
- * A task implementation that executes a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#series(FlowContext, List) order}.
+ * A task implementation that executes a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#sequential(FlowContext, List) order}.
  * <p>
- * This implementation makes it easy to nest the execution of {@linkplain Task asynchronous tasks} inside a call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#series(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
+ * This implementation makes it easy to nest the execution of {@linkplain Task asynchronous tasks} inside a call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
  *
  * @param <C> the type of the {@linkplain FlowContext context} shared between tasks
  */
@@ -21,9 +21,9 @@ public class SequentialTasks<C extends FlowContext> implements Task<C> {
     private final boolean failFast;
 
     /**
-     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#series(FlowContext, List) order} re-using an existing {@linkplain FlowContext context}.
+     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#sequential(FlowContext, List) order} re-using an existing {@linkplain FlowContext context}.
      * <p>
-     * The task re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#series(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
+     * The task re-uses the {@linkplain FlowContext context} from the outer call to {@link Flow#parallel(FlowContext, List)}, {@link Flow#sequential(FlowContext, List)} or {@link Flow#while_(FlowContext, Task, Predicate)}.
      *
      * @param tasks    The list of tasks to execute
      * @param failFast whether the execution of the list should fail fast or fail last
@@ -33,7 +33,7 @@ public class SequentialTasks<C extends FlowContext> implements Task<C> {
     }
 
     /**
-     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#series(FlowContext, List) order} using a new {@linkplain FlowContext context}.
+     * Creates a new task that executes the given list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#sequential(FlowContext, List) order} using a new {@linkplain FlowContext context}.
      * <p>
      * The task uses the given {@linkplain FlowContext context} for the execution of the {@linkplain Task asynchronous tasks}.
      *
@@ -50,6 +50,6 @@ public class SequentialTasks<C extends FlowContext> implements Task<C> {
     @Override
     public Promise<C> apply(final C context) {
         C contextToUse = this.context != null ? this.context : context;
-        return series(contextToUse, tasks).failFast(failFast).promise();
+        return sequential(contextToUse, tasks).failFast(failFast).promise();
     }
 }

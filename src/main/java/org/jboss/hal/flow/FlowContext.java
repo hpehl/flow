@@ -24,7 +24,7 @@ import java.util.Stack;
 import java.util.function.Predicate;
 
 /**
- * General purpose context to be used as a data structure when executing a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel}, in {@linkplain Flow#series(FlowContext, List) sequence} or {@linkplain Flow#while_(FlowContext, Task, Predicate) while} a {@linkplain Predicate predicate} evaluates to {@code true}.
+ * General purpose context to be used as a data structure when executing a list of {@linkplain Task asynchronous tasks} in {@linkplain Flow#parallel(FlowContext, List) parallel}, in {@linkplain Flow#sequential(FlowContext, List) sequence} or {@linkplain Flow#while_(FlowContext, Task, Predicate) while} a {@linkplain Predicate predicate} evaluates to {@code true}.
  * <p>
  * The context provides a {@linkplain Progress progress indicator} to signal the progress of the task execution and a stack and a map for sharing data between {@linkplain Task asynchronous tasks}.
  */

@@ -45,12 +45,11 @@ class Tasks {
             sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
         } else {
             sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
-
         }
     }
 
     void sequential() {
-        Sequence<FlowContext> sequence = Flow.series(context(), tasks())
+        Sequence<FlowContext> sequence = Flow.sequential(context(), tasks())
                 .failFast(failFast);
         if (new Random().nextBoolean()) {
             sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
@@ -72,7 +71,7 @@ class Tasks {
     }
 
     void nested() {
-        Sequence<FlowContext> sequence = Flow.series(context(), nestedTasks())
+        Sequence<FlowContext> sequence = Flow.sequential(context(), nestedTasks())
                 .failFast(failFast);
         if (new Random().nextBoolean()) {
             sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
