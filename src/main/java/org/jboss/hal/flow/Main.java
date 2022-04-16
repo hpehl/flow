@@ -71,7 +71,7 @@ public class Main implements EntryPoint {
                                                         .on(click, e -> sequential()))
                                                 .add(button().css("pf-c-button", "pf-m-primary", "pf-u-mr-sm")
                                                         .textContent("While")
-                                                        .on(click, e -> while_()))
+                                                        .on(click, e -> repeat()))
                                                 .add(button().css("pf-c-button", "pf-m-primary", "pf-u-mr-sm")
                                                         .textContent("Nested")
                                                         .on(click, e -> nested()))
@@ -98,11 +98,11 @@ public class Main implements EntryPoint {
         tasksElement.sequential();
     }
 
-    void while_() {
+    void repeat() {
         String title = "Repeat" + (failFast.value() ? " (fail fast)" : " (fail last)");
         TasksElement tasksElement = new TasksElement(title, randomFailure.value(), failFast.value());
         div(tasksContainer).add(tasksElement);
-        tasksElement.while_();
+        tasksElement.repeat();
     }
 
     void nested() {

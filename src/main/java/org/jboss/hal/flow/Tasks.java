@@ -16,6 +16,7 @@ import jsinterop.base.Js;
 import static elemental2.dom.DomGlobal.fetch;
 import static elemental2.dom.DomGlobal.setTimeout;
 import static java.util.Arrays.asList;
+import static org.jboss.hal.flow.Repeat.DEFAULT_ITERATIONS;
 
 class Tasks {
 
@@ -58,8 +59,9 @@ class Tasks {
         }
     }
 
-    void while_() {
-        While<FlowContext> while_ = Flow.while_(context(), currentTime(), wrongTime())
+    void repeat() {
+        Repeat<FlowContext> while_ = Flow.repeat(context(), currentTime())
+                .while_(wrongTime())
                 .failFast(failFast)
                 .interval(INTERVAL)
                 .timeout(TIMEOUT);
@@ -86,7 +88,7 @@ class Tasks {
         return asList(
                 new ParallelTasks<>(tasks(), failFast),
                 new SequentialTasks<>(tasks(), failFast),
-                new WhileTask<>(currentTime(), wrongTime(), failFast, INTERVAL, TIMEOUT)
+                new RepeatTask<>(currentTime(), wrongTime(), failFast, INTERVAL, TIMEOUT, DEFAULT_ITERATIONS)
         );
     }
 

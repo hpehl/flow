@@ -45,8 +45,8 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
         new Tasks(progressElement, this, randomFailure, failFast).sequential();
     }
 
-    void while_() {
-        new Tasks(progressElement, this, randomFailure, failFast).while_();
+    void repeat() {
+        new Tasks(progressElement, this, randomFailure, failFast).repeat();
     }
 
     void nested() {
