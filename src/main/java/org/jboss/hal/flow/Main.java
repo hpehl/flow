@@ -27,11 +27,11 @@ public class Main implements EntryPoint {
             "of asynchronous tasks.";
     private static final String DESCRIPTION_1 = "The parallel and sequential tests execute seven tasks (four tasks " +
             "fetch the current time from worldtimeapi.org, three tasks wait for a given time).";
-    private static final String DESCRIPTION_2 = "The while test fetches the current time from worldtimeapi.org " +
+    private static final String DESCRIPTION_2 = "The repeated test fetches the current time from worldtimeapi.org " +
             "every " + INTERVAL + " ms as long as the time doesn't end in " + GOOD_TIME + " and cancels after a " +
             "timeout of " + (TIMEOUT / 1000) + " seconds.";
     private static final String DESCRIPTION_3 = "The nested test executes the seven tasks in parallel, " +
-            "then in sequence and finally the repeated test.";
+            "then in sequence and finally executes the repeated test.";
 
     HTMLElement tasksContainer;
     SwitchElement randomFailure;
