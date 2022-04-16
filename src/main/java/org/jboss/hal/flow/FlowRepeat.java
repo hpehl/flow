@@ -62,7 +62,7 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
     @Override
     public Repeat<C> while_(final Predicate<C> predicate) {
         this.predicate = predicate;
-        return null;
+        return this;
     }
 
     @Override
