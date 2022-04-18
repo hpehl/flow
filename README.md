@@ -1,6 +1,6 @@
 # Flow 
 
-Parallel, sequential, repeated and nested execution of asynchronous tasks based on GWT and Promises. 
+Parallel, sequential, repeated and nested execution of asynchronous tasks in GWT using promises. 
 
 The flow API is currently only used in the [HAL management console](https://hal.github.io) and not available on its own. This repository is mainly used as a playground to evolve and test the API. If there's interest to make this available on its own, leave a note in the [discussions](https://github.com/hpehl/flow/discussions)!  
 
@@ -10,7 +10,7 @@ The entrypoint to the flow API is the interface `Flow<C extends FlowContext>`. I
 
 1. `<C extends FlowContext> Sequence<C> parallel(C context, List<Task<C>> tasks)`
 2. `<C extends FlowContext> Sequence<C> sequential(C context, List<Task<C>> tasks)`
-3. `<C extends FlowContext> While<C> while_(C context, Task<C> task, Predicate<C> until)`
+3. `<C extends FlowContext> Repeat<C> repeat(C context, Task<C> task)`
 
 Tasks need to implement a simple interface: 
 
