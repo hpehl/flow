@@ -97,8 +97,9 @@ Flow.sequential(new FlowContext(), tasks)
 
 ### Repeated Execution
 
-Repeated execution corresponds to a `while` loop and runs a task as long as a condition evaluates to `true`. For the repeated execution you can specify 
+Repeated execution corresponds to a `while` loop and runs a task as long as certain conditions are met. For the repeated execution you can specify 
 
+- the condition
 - whether to fail fast or fail last
 - the interval between the iterations
 - a timeout after the loop is canceled
