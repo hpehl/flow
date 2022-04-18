@@ -102,12 +102,14 @@ Repeated execution corresponds to a `while` loop and runs a task as long as a co
 - whether to fail fast or fail last
 - the interval between the iterations
 - a timeout after the loop is canceled
+- the maximal iterations
 
 To repeatedly execute a task, use something like this
 
 ```java
-Task<FlowContext> task = context -> Promise.resolve(context.push(new Random().nextInt(10)));
-Flow.while_(new FlowContext(), task, context -> context.<Integer>pop() == 3)
+Task<FloContext> task = context -> context.resolve(new Random().nextInt(10));
+Flow.repeat(new FlowContext(), task)
+        .while_(context -> context.<Integer>pop() != 3)
         .interval(600)
         .timeout(3_000)
         .subscribe(context -> console.log("Got a three!"),
@@ -116,25 +118,19 @@ Flow.while_(new FlowContext(), task, context -> context.<Integer>pop() == 3)
 
 ### Nested Execution
 
-The flow API makes it easy to nest task executions. You could for instance run five tasks in parallel, then execute three tasks in order and finally execute a task until a condition is met. To do so, the API provides different task implementation:
+The flow API makes it easy to nest task executions. You could for instance run five tasks in parallel, then execute three tasks in order and finally execute a task until a condition is met. To do so, the API provides different task implementations:
 
 - `ParallelTasks<C>`
 - `SequentialTasks<C>`
-- `WhileTask<C>`
+- `RepeatTask<C>`
 
-Here's an example how to use nested tasks:
+Here's an example that runs multiple asynchronous tasks in sequence three times:
 
 ```java
-List<Task<FlowContext>> parallelTasks = ...;
-List<Task<FlowContext>> sequentialTasks = ...;
-Task task = ...;
-Predicate<FloContext> condition = ...;
-
-Flow.sequential(new FlowContext(), Arrays.asList(
-        new ParallelTasks<>(parallelTasks),
-        new SequentialTasks<>(sequentialTasks),
-        new WhileTask<>(task, condition)))
-        .subscribe(context -> console.log("Success!"),
+List<Task<FlowContext>> tasks = ...;
+Flow.repeat(new FlowContext(), new SequentialTasks<>(tasks))
+        .iterations(3)
+        .subscribe(context -> console.log("Done!"),
                 (context, failure) -> console.error("Failed: " + failure));
 ```
 
