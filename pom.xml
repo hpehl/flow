@@ -41,7 +41,7 @@
 
         <!-- Plugin versions -->
         <version.frontend.plugin>1.12.1</version.frontend.plugin>
-        <version.gwt.maven.plugin>1.0.0</version.gwt.maven.plugin>
+        <version.gwt.maven.plugin>1.0.1</version.gwt.maven.plugin>
 
         <!-- Build related -->
         <encoding>UTF-8</encoding>
