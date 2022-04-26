@@ -28,18 +28,17 @@ The result of the task execution can be processed in different ways:
 
 **Subscription**
 
-The subscription is a terminal operation which supports one callback for successful and one for failed execution:
+The subscription is a terminal operation which supports a callback for the outcome of the execution. Errors in tasks are caught and are tracked in the context. The context provides methods to check if the execution was successful, ran into a timeout or failed with an error.
 
 ```java
 List<Task<FloContext>> tasks = ...;
 Flow.sequential(new FlowContext(), tasks)
-        .subscribe(context -> console.log("Success!"),
-                (context, failure) -> console.error("Failed: " + failure));
+        .subscribe(context -> console.log("Finished with status %s", context.status()));
 ```
 
 **Promise**
 
-The result can be returned as `Promise<C>` to be returned to a calling method
+The result can be returned as `Promise<C>` to be passed to a calling method, for example,
 
 ```java
 void Promise<FlowContext> run() {
@@ -61,12 +60,14 @@ Flow.sequential(new FlowContext(), tasks)
         });
 ```
 
+Errors in tasks are propagated to the closest catch handler.
+
 ### Parallel Execution
 
-Parallel execution runs all tasks simultaneously and returns when all tasks have finished. In case of a failure you can specify to 
+Parallel execution runs all tasks simultaneously and returns when all tasks have finished. For the parallel execution you can specify 
 
-- fail fast: fail as soon as the first task fails or
-- fail last: don't fail if one or more task fail and continue with the execution of the remaining tasks.
+- whether to fail fast or fail last
+- a timeout after the execution is canceled. Pleas note that the timeout isn't used at the moment. The reason for that is the all promises are started in parallel and the promise API doesn't allow to cancel running promises at the moment.
 
 To execute a list of tasks in parallel, use something like this 
 
@@ -74,16 +75,15 @@ To execute a list of tasks in parallel, use something like this
 List<Task<FloContext>> tasks = ...;
 Flow.parallel(new FlowContext(), tasks)
         .failFast(true)
-        .subscribe(context -> console.log("Success!"),
-                (context, failure) -> console.error("Failed: " + failure));
+        .subscribe(context -> console.log("Done!"));
 ```
 
 ### Sequential Execution
 
-Sequential execution runs the tasks in order. That is the second task starts after the first finished. In case of a failure you can specify to
+Sequential execution runs the tasks in order. That is the second task starts after the first finished. For the sequential execution you can specify
 
-- fail fast: fail as soon as the first task fails or
-- fail last: don't fail if one or more task fail and continue with the execution of the remaining tasks.  
+- whether to fail fast or fail last
+- a timeout after the execution is canceled
 
 To execute a list of tasks in order, use something like this
 
@@ -91,8 +91,8 @@ To execute a list of tasks in order, use something like this
 List<Task<FloContext>> tasks = ...;
 Flow.sequential(new FlowContext(), tasks)
         .failFast(true)
-        .subscribe(context -> console.log("Success!"),
-                (context, failure) -> console.error("Failed: " + failure));
+        .timeout(6_000)
+        .subscribe(context -> console.log("Done!"));
 ```
 
 ### Repeated Execution
@@ -108,13 +108,18 @@ Repeated execution corresponds to a `while` loop and runs a task as long as cert
 To repeatedly execute a task, use something like this
 
 ```java
-Task<FloContext> task = context -> context.resolve(new Random().nextInt(10));
+Task<FlowContext> task = context -> context.resolve(new Random().nextInt(10));
 Flow.repeat(new FlowContext(), task)
         .while_(context -> context.<Integer>pop() != 3)
-        .interval(600)
-        .timeout(3_000)
-        .subscribe(context -> console.log("Got a three!"),
-                (context, failure) -> console.log("No luck!"));
+        .interval(500)
+        .iterations(10)
+        .subscribe(context -> {
+                if (context.successful()) {
+                    console.log("Got a three!");
+                } else {
+                    console.log("No luck!");
+                }
+        });
 ```
 
 ### Nested Execution
@@ -131,8 +136,7 @@ Here's an example that runs multiple asynchronous tasks in sequence three times:
 List<Task<FlowContext>> tasks = ...;
 Flow.repeat(new FlowContext(), new SequentialTasks<>(tasks))
         .iterations(3)
-        .subscribe(context -> console.log("Done!"),
-                (context, failure) -> console.error("Failed: " + failure));
+        .subscribe(context -> console.log("Done!"));
 ```
 
 ## Build & Run

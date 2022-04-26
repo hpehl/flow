@@ -31,10 +31,18 @@ $pf-global--image-path: "/node_modules/@patternfly/patternfly/assets/images";
 @import "/node_modules/@patternfly/patternfly/utilities/Spacing/spacing";
 @import "/node_modules/@patternfly/patternfly/utilities/Text/text";
 
-.fl-status__done {
+.fl-status__success {
   background-color: #f3faf2;
 }
 
-.fl-status__error {
+.fl-status__timeout {
+  background-color: #fdf7e7;
+}
+
+.fl-status__undefined {
+  background-color: #f0f0f0;
+}
+
+.fl-status__failure {
   background-color: #faeae8;
 }

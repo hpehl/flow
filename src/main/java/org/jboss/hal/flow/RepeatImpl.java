@@ -17,11 +17,7 @@ package org.jboss.hal.flow;
 
 import java.util.function.Predicate;
 
-import elemental2.promise.IThenable;
-import elemental2.promise.IThenable.ThenOnFulfilledCallbackFn;
 import elemental2.promise.Promise;
-import elemental2.promise.Promise.CatchOnRejectedCallbackFn;
-import elemental2.promise.Promise.FinallyOnFinallyCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.RejectCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.ResolveCallbackFn;
 
@@ -30,9 +26,8 @@ import static elemental2.dom.DomGlobal.clearTimeout;
 import static elemental2.dom.DomGlobal.setInterval;
 import static elemental2.dom.DomGlobal.setTimeout;
 
-class FlowRepeat<C extends FlowContext> implements Repeat<C> {
+class RepeatImpl<C extends FlowContext> extends FlowRunner<C> implements Repeat<C> {
 
-    private final C context;
     private final Task<C> task;
     private Predicate<C> predicate;
     private boolean failFast;
@@ -44,9 +39,8 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
     private double timeoutHandle;
     private double intervalHandle;
 
-    FlowRepeat(final C context, final Task<C> task) {
-        this.context = context;
-        this.context.progress.reset();
+    RepeatImpl(final C context, final Task<C> task) {
+        super(context, 1);
         this.task = task;
         this.predicate = __ -> true;
         this.failFast = DEFAULT_FAIL_FAST;
@@ -58,6 +52,8 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
         this.timeoutHandle = 0;
         this.intervalHandle = 0;
     }
+
+    // ------------------------------------------------------ repeat API
 
     @Override
     public Repeat<C> while_(final Predicate<C> predicate) {
@@ -89,45 +85,10 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
         return this;
     }
 
-    @Override
-    public <V> Promise<V> then(final ThenOnFulfilledCallbackFn<? super C, ? extends V> onFulfilled) {
-        return run().then(onFulfilled);
-    }
+    // ------------------------------------------------------ run
 
     @Override
-    public <V> Promise<V> then(final ThenOnFulfilledCallbackFn<? super C, ? extends V> onFulfilled,
-            final IThenable.ThenOnRejectedCallbackFn<? extends V> onRejected) {
-        return run().then(onFulfilled, onRejected);
-    }
-
-    @Override
-    public <V> Promise<V> catch_(final CatchOnRejectedCallbackFn<? extends V> onRejected) {
-        return run().catch_(onRejected);
-    }
-
-    @Override
-    public Promise<C> finally_(final FinallyOnFinallyCallbackFn onFinally) {
-        return run().finally_(onFinally);
-    }
-
-    @Override
-    public Promise<C> promise() {
-        return run();
-    }
-
-    @Override
-    public void subscribe(final SuccessCallback<C> onSuccess, final FailureCallback<C> onFailure) {
-        run().then(c -> {
-                    onSuccess.success(c);
-                    return null;
-                })
-                .catch_(error -> {
-                    onFailure.failed(context, String.valueOf(error));
-                    return null;
-                });
-    }
-
-    private Promise<C> run() {
+    Promise<C> run() {
         return new Promise<>((resolve, reject) -> {
             timeoutHandle = setTimeout(__ -> cancel(reject, TIMEOUT_ERROR), timeout);
             if (!predicate.test(context)) {
@@ -145,8 +106,8 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
                 task.apply(context)
                         .then(c -> {
                             index++;
-                            context.progress.tick();
-                            if (areWeDone(context)) {
+                            c.progress.tick();
+                            if (areWeDone(c)) {
                                 finish(resolve, c);
                             }
                             return null;
@@ -161,6 +122,8 @@ class FlowRepeat<C extends FlowContext> implements Repeat<C> {
             }
         }, interval);
     }
+
+    // ------------------------------------------------------ helper methods
 
     private boolean areWeDone(C context) {
         if (iterations > 0) {

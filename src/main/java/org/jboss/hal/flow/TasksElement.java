@@ -56,14 +56,14 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
     // ------------------------------------------------------ logging
 
     @Override
-    public void start(final String id, final String message) {
+    public void logStart(final String id, final String message) {
         div(body).add(pre().id(id)
                 .css("pf-u-font-size-sm", "pf-u-color-300", "pf-u-text-truncate")
                 .textContent(message));
     }
 
     @Override
-    public void end(final String id, final String message) {
+    public void logEnd(final String id, final String message) {
         Element line = document.getElementById(id);
         if (line != null) {
             pre(line).textContent(line.textContent + message);
@@ -71,7 +71,7 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
     }
 
     @Override
-    public void failure(final String id, final String message) {
+    public void logFailure(final String id, final String message) {
         Element line = document.getElementById(id);
         if (line != null) {
             line.classList.remove("pf-u-color-300");
@@ -80,14 +80,10 @@ class TasksElement implements IsElement<HTMLElement>, Logger {
     }
 
     @Override
-    public Promise<Void> markSuccessful() {
-        article(root).css("fl-status__done");
-        return Promise.resolve((Void) null);
-    }
-
-    @Override
-    public Promise<Void> markFailed() {
-        article(root).css("fl-status__error");
+    public Promise<Void> finish(final FlowStatus result) {
+        article(root)
+                .title(result.name().toLowerCase())
+                .css("fl-status__" + result.name().toLowerCase());
         return Promise.resolve((Void) null);
     }
 }

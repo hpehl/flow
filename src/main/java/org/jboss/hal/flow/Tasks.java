@@ -22,8 +22,9 @@ class Tasks {
 
     private static final double FAILURE_PERCENTAGE = 0.08;
     static final String GOOD_TIME = "0";
-    static final int INTERVAL = 1000;
-    static final int TIMEOUT = 8000;
+    static final int INTERVAL = 1_000;
+    static final int SEQUENCE_TIMEOUT = 4_000;
+    static final int REPEAT_TIMEOUT = 8_000;
 
     private final Progress progress;
     private final Logger logger;
@@ -40,46 +41,48 @@ class Tasks {
     // ------------------------------------------------------ task executions
 
     void parallel() {
-        Sequence<FlowContext> sequence = Flow.parallel(context(), tasks())
-                .failFast(failFast);
-        if (new Random().nextBoolean()) {
-            sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
-        } else {
-            sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
-        }
+
+        Task<FlowContext> task = context -> context.resolve(new Random().nextInt(10));
+        Flow.repeat(new FlowContext(), task)
+                .while_(context -> context.<Integer>pop() != 3)
+                .interval(500)
+                .iterations(10)
+                .subscribe(context -> {
+                    if (context.successful()) {
+                        console.log("Got a three!")
+                    } else {
+
+                    }
+                });
+
+
+        Flow.parallel(context(), tasks())
+                .failFast(failFast)
+                .timeout(SEQUENCE_TIMEOUT)
+                .subscribe(context -> logger.finish(context.status()));
     }
 
     void sequential() {
-        Sequence<FlowContext> sequence = Flow.sequential(context(), tasks())
-                .failFast(failFast);
-        if (new Random().nextBoolean()) {
-            sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
-        } else {
-            sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
-        }
+        Flow.sequential(context(), tasks())
+                .failFast(failFast)
+                .timeout(SEQUENCE_TIMEOUT)
+                .subscribe(context -> logger.finish(context.status()));
     }
 
     void repeat() {
-        Repeat<FlowContext> while_ = Flow.repeat(context(), currentTime())
+        Flow.repeat(context(), currentTime())
                 .while_(wrongTime())
                 .failFast(failFast)
                 .interval(INTERVAL)
-                .timeout(TIMEOUT);
-        if (new Random().nextBoolean()) {
-            while_.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
-        } else {
-            while_.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
-        }
+                .timeout(REPEAT_TIMEOUT)
+                .subscribe(context -> logger.finish(context.status()));
     }
 
     void nested() {
-        Sequence<FlowContext> sequence = Flow.sequential(context(), nestedTasks())
-                .failFast(failFast);
-        if (new Random().nextBoolean()) {
-            sequence.subscribe(__ -> logger.markSuccessful(), (__, ___) -> logger.markFailed());
-        } else {
-            sequence.then(__ -> logger.markSuccessful()).catch_(__ -> logger.markFailed());
-        }
+        Flow.sequential(context(), nestedTasks())
+                .failFast(failFast)
+                .timeout(SEQUENCE_TIMEOUT + REPEAT_TIMEOUT)
+                .subscribe(context -> logger.finish(context.status()));
     }
 
     // ------------------------------------------------------ factory methods
@@ -88,18 +91,18 @@ class Tasks {
         return asList(
                 new ParallelTasks<>(tasks(), failFast),
                 new SequentialTasks<>(tasks(), failFast),
-                new RepeatTask<>(currentTime(), wrongTime(), failFast, INTERVAL, TIMEOUT, DEFAULT_ITERATIONS)
+                new RepeatTask<>(currentTime(), wrongTime(), failFast, INTERVAL, REPEAT_TIMEOUT, DEFAULT_ITERATIONS)
         );
     }
 
     private List<Task<FlowContext>> tasks() {
         return asList(
                 currentTime(),
-                delay(3000),
+                delay(),
                 currentTime(),
-                delay(2000),
+                delay(),
                 currentTime(),
-                delay(1000),
+                delay(),
                 currentTime()
         );
     }
@@ -114,17 +117,19 @@ class Tasks {
 
     // ------------------------------------------------------ task implementations
 
-    private Task<FlowContext> delay(long milliseconds) {
+    private Task<FlowContext> delay() {
+        long random = 500L + new Random().nextInt(2_001);
+        final long milliseconds = random - random % 500L;
         return context -> new Promise<>(
                 (resolve, reject) -> {
                     String uniqueId = Id.unique();
-                    logger.start(uniqueId, "Wait " + milliseconds + " ms...");
-                    setTimeout(ignore -> {
+                    logger.logStart(uniqueId, "Wait " + milliseconds + " ms...");
+                    setTimeout(__ -> {
                         if (blowUp()) {
-                            logger.failure(uniqueId, "Failed");
+                            logger.logFailure(uniqueId, "Failed");
                             reject.onInvoke("Random failure");
                         } else {
-                            logger.end(uniqueId, "Done");
+                            logger.logEnd(uniqueId, "Done");
                             resolve.onInvoke(context);
                         }
                     }, milliseconds);
@@ -134,15 +139,15 @@ class Tasks {
     private Task<FlowContext> currentTime() {
         return context -> {
             String uniqueId = Id.unique();
-            logger.start(uniqueId, "Fetch time...");
+            logger.logStart(uniqueId, "Fetch time...");
             return fetchTime().then(time -> {
                 context.push(time);
                 if (blowUp()) {
-                    logger.failure(uniqueId, "Failed");
-                    throw new RuntimeException("Random failure");
+                    logger.logFailure(uniqueId, "Failed");
+                    return context.reject("Random failure");
                 } else {
-                    logger.end(uniqueId, time);
-                    return Promise.resolve(context);
+                    logger.logEnd(uniqueId, time);
+                    return context.resolve();
                 }
             });
         };

@@ -18,7 +18,8 @@ import static org.jboss.elemento.EventType.bind;
 import static org.jboss.elemento.EventType.click;
 import static org.jboss.hal.flow.Tasks.GOOD_TIME;
 import static org.jboss.hal.flow.Tasks.INTERVAL;
-import static org.jboss.hal.flow.Tasks.TIMEOUT;
+import static org.jboss.hal.flow.Tasks.REPEAT_TIMEOUT;
+import static org.jboss.hal.flow.Tasks.SEQUENCE_TIMEOUT;
 
 public class Main implements EntryPoint {
 
@@ -26,10 +27,11 @@ public class Main implements EntryPoint {
     private static final String DESCRIPTION_0 = "This page tests parallel, sequential, repeated and nested execution " +
             "of asynchronous tasks.";
     private static final String DESCRIPTION_1 = "The parallel and sequential tests execute seven tasks (four tasks " +
-            "fetch the current time from worldtimeapi.org, three tasks wait for a given time).";
+            "fetch the current time from worldtimeapi.org, three tasks wait for a random time) and cancel after a " +
+            "timeout of " + (SEQUENCE_TIMEOUT / 1000) + " seconds.";
     private static final String DESCRIPTION_2 = "The repeated test fetches the current time from worldtimeapi.org " +
             "every " + INTERVAL + " ms as long as the time doesn't end in " + GOOD_TIME + " and cancels after a " +
-            "timeout of " + (TIMEOUT / 1000) + " seconds.";
+            "timeout of " + (REPEAT_TIMEOUT / 1000) + " seconds.";
     private static final String DESCRIPTION_3 = "The nested test executes the seven tasks in parallel, " +
             "then in sequence and finally executes the repeated test.";
 
