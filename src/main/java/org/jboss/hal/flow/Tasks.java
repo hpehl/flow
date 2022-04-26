@@ -41,21 +41,6 @@ class Tasks {
     // ------------------------------------------------------ task executions
 
     void parallel() {
-
-        Task<FlowContext> task = context -> context.resolve(new Random().nextInt(10));
-        Flow.repeat(new FlowContext(), task)
-                .while_(context -> context.<Integer>pop() != 3)
-                .interval(500)
-                .iterations(10)
-                .subscribe(context -> {
-                    if (context.successful()) {
-                        console.log("Got a three!")
-                    } else {
-
-                    }
-                });
-
-
         Flow.parallel(context(), tasks())
                 .failFast(failFast)
                 .timeout(SEQUENCE_TIMEOUT)
