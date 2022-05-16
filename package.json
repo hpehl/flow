@@ -15,7 +15,7 @@
     "@parcel/reporter-cli": "^2.4.1",
     "@parcel/transformer-sass": "^2.5.0",
     "parcel": "^2.5.0",
-    "parcel-resolver-ignore": "^2.0.0"
+    "parcel-resolver-ignore": "^2.1.1"
   },
   "dependencies": {
     "@patternfly/patternfly": "^4.194.4"
