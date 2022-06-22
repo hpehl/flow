@@ -12,7 +12,7 @@
     "prod": "parcel build --public-url \"./\" --dist-dir target/flow"
   },
   "devDependencies": {
-    "@parcel/reporter-cli": "^2.6.0",
+    "@parcel/reporter-cli": "^2.6.2",
     "@parcel/transformer-sass": "^2.6.1",
     "parcel": "^2.6.1",
     "parcel-resolver-ignore": "^2.1.1"
