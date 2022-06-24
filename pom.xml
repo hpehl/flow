@@ -36,7 +36,7 @@
     <properties>
         <!-- Dependency versions -->
         <version.elemento>1.0.10-gwtcom</version.elemento>
-        <version.gwt.com>2.9.0</version.gwt.com>
+        <version.gwt.com>2.10.0</version.gwt.com>
         <version.node>v16.14.0</version.node>
 
         <!-- Plugin versions -->
