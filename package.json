@@ -18,6 +18,6 @@
     "parcel-resolver-ignore": "^2.1.3"
   },
   "dependencies": {
-    "@patternfly/patternfly": "^4.206.3"
+    "@patternfly/patternfly": "^4.210.2"
   }
 }
