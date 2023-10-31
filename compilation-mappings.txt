@@ -1,9 +1,10 @@
-B236FC26D3CF3A84863713BC09277CFE.cache.js
+9493C867F011CF965E008034CE53378C.cache.js
 compiler.emulatedStack false
 compiler.predeclare.cross.fragment.references false
 compiler.stackMode native
 compiler.useSourceMaps false
 compiler.useSymbolMaps false
+dragEventSupport maybe
 gwt.logging.enabled FALSE
 gwt.logging.simpleConsoleHandler ENABLED
 gwt.uncaughtexceptionhandler.windowonerror REPORT_IF_NO_HANDLER
@@ -18,5 +19,33 @@ jre.logging.logLevel OFF
 jre.logging.simpleConsoleHandler ENABLED
 jsinterop.checks DISABLED
 superdevmode off
+touchEventSupport maybe
+user.agent gecko1_8
+webApiUsage modern
+
+9493C867F011CF965E008034CE53378C.cache.js
+compiler.emulatedStack false
+compiler.predeclare.cross.fragment.references false
+compiler.stackMode native
+compiler.useSourceMaps false
+compiler.useSymbolMaps false
+dragEventSupport maybe
+gwt.logging.enabled FALSE
+gwt.logging.simpleConsoleHandler ENABLED
+gwt.uncaughtexceptionhandler.windowonerror REPORT_IF_NO_HANDLER
+jre.checkedMode DISABLED
+jre.checks.api AUTO
+jre.checks.bounds AUTO
+jre.checks.checkLevel NORMAL
+jre.checks.numeric AUTO
+jre.checks.type AUTO
+jre.debugMode DISABLED
+jre.logging.logLevel OFF
+jre.logging.simpleConsoleHandler ENABLED
+jsinterop.checks DISABLED
+superdevmode off
+touchEventSupport maybe
+user.agent safari
+webApiUsage modern
 
 Devmode:devmode.js
