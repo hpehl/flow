@@ -40,7 +40,7 @@
         <version.node>v16.14.0</version.node>
 
         <!-- Plugin versions -->
-        <version.frontend.plugin>1.14.2</version.frontend.plugin>
+        <version.frontend.plugin>1.15.0</version.frontend.plugin>
         <version.gwt.maven.plugin>1.1.0</version.gwt.maven.plugin>
 
         <!-- Build related -->
