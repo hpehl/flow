@@ -14,7 +14,7 @@
   "devDependencies": {
     "@parcel/reporter-cli": "^2.10.2",
     "@parcel/transformer-sass": "^2.10.3",
-    "parcel": "^2.10.3",
+    "parcel": "^2.11.0",
     "parcel-resolver-ignore": "^2.2.0"
   },
   "dependencies": {
