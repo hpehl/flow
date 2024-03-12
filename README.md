@@ -2,6 +2,8 @@
 
 Flow is now part of [Elemento](https://github.com/hal/elemento?tab=readme-ov-file#flow). 
 
+---
+
 # Flow 
 
 Parallel, sequential, repeated and nested execution of asynchronous tasks in GWT using promises. 
