@@ -1,4 +1,4 @@
-** Deprecated **
+**No longer active**
 
 Flow is now part of [Elemento](https://github.com/hal/elemento?tab=readme-ov-file#flow). 
 
